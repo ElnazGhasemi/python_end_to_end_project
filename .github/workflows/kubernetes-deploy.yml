@@ -1,0 +1,24 @@
+name: Deploy to Kubernetes
+
+on:
+  workflow_run:
+    workflows: ["Build and Push Docker image"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+
+    - name: Set up Kubeconfig
+      run: echo "${{ secrets.KUBECONFIG }}" > kubeconfig && export KUBECONFIG=$(pwd)/kubeconfig
+
+    - name: Deploy to Kubernetes
+      run: kubectl apply -f k8s-deployment.yaml
